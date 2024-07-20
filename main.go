@@ -6,6 +6,16 @@ import (
 	"strings"
 )
 
+func load(filename string) []byte {
+	ba, err := os.ReadFile(filename)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %s\n", err)
+		os.Exit(1)
+	}
+
+	return ba
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Fprintf(os.Stderr, "%s: missing arguments\n", os.Args[0])
@@ -13,15 +23,30 @@ func main() {
 	}
 
 	var fn string
-	if strings.Contains(os.Args[1], "-") {
-		if os.Args[1] == "-h" {
-			usage()
-		}
+	if os.Args[1] == "-h" {
+		usage()
 	} else {
 		fn = os.Args[1]
 	}
 
-	fmt.Fprintf(os.Stdout, "opening %s\n", fn)
+	s, err := work(load(fn))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %s\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Fprintf(os.Stdout, "%s", s)
+}
+
+func work(data []byte) (string, error) {
+	s := string(data)
+
+	s = strings.ReplaceAll(s, "  ", " ")
+	s = strings.ReplaceAll(s, "\t", "")
+	s = strings.ReplaceAll(s, "\n", " ")
+	s = strings.TrimRight(s, " ")
+
+	return s, nil
 }
 
 func usage() {
